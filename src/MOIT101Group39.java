@@ -32,7 +32,7 @@ class MOIT101Group39 {
     static HashMap<Integer, LinkedHashMap<String, List<Double>>> attendance = new HashMap<>();
 
     static Map<String, String> loginUser() {
-        String[] validUsers = { "employee", "payroll_staff" };
+        String[] validUsers = {"employee", "payroll_staff"};
         System.out.println("Enter username:");
         String username = scanner.nextLine();
         System.out.println("Enter password:");
@@ -54,7 +54,13 @@ class MOIT101Group39 {
     }
 
     static double calculateTotalHoursWorked(double timeIn, double timeOut) {
-        return timeIn - timeOut;
+        double adjOut = Math.min(timeOut, 17.0);
+        double adjIn = timeIn;
+        if (timeIn <= 8.0833) {
+            adjIn = 8.0;
+        }
+        adjIn = Math.max(adjIn, 8.0);
+        return (adjOut - adjIn) - 1.0;
     }
 
     static double calculateGrossSalary(double totalHoursWorked, double HourlyRate) {
@@ -146,10 +152,10 @@ class MOIT101Group39 {
         int employeeNumber = scanner.nextInt();
         Map<EmployeeFields, Object> employee = employees.get(employeeNumber);
         System.out.printf("""
-                Employee Number: %s
-                Employee Name: %s %s
-                Birthday: %s
-                """, employeeNumber, employee.get(EmployeeFields.FirstName), employee.get(EmployeeFields.LastName),
+                        Employee Number: %s
+                        Employee Name: %s %s
+                        Birthday: %s
+                        """, employeeNumber, employee.get(EmployeeFields.FirstName), employee.get(EmployeeFields.LastName),
                 employee.get(EmployeeFields.Birthday));
     }
 
@@ -190,68 +196,48 @@ class MOIT101Group39 {
             }
 
             System.out.printf("""
-                    Employee #: %s
-                    Employee Name: %s %s
-                    Birthday: %s
-                        """,
+                            Employee #: %s
+                            Employee Name: %s %s
+                            Birthday: %s
+                            """,
                     selectedEmployee.get(EmployeeFields.Id),
                     selectedEmployee.get(EmployeeFields.FirstName),
                     selectedEmployee.get(EmployeeFields.LastName),
                     selectedEmployee.get(EmployeeFields.Birthday));
 
-            /*
-             * cutoffCalculator()
-             * firstCutoff
-             * Cutoff date: June 1 to june 15
-             * total horus worked
-             * gross salary
-             * net salary
-             * secondCutoff
-             * Cutoff date: june 16 to june 30
-             * total hours worked
-             * each deduction:
-             * sss:
-             * philhealth:
-             * pagibig:
-             * tax:
-             * total deductions:
-             * net salary:
-             */
-
-            List<Map<String, Double>> cutoffRecord = new ArrayList<>();
-            String[] cutoffs = { "" };
-            int initialMonth = 5; // June
             double totalHoursWorked = 0;
-            System.out.println(attendance.get(selectedEmployee.get(EmployeeFields.Id)).keySet());
+            String[] monthsDisplay = {"June", "July", "August", "September", "October", "November", "December"};
+
+            int lastCutoff = -1;
+            int lastMonth = 0;
             for (String recordDate : attendance.get(selectedEmployee.get(EmployeeFields.Id)).keySet()) {
-                // System.out.println(recordDate);
                 int month = Integer.parseInt(recordDate.split("/")[0]);
                 int day = Integer.parseInt(recordDate.split("/")[1]);
-                //
-                System.out.println(attendance.get(selectedEmployee.get(EmployeeFields.Id)).get(recordDate));
                 double timeIn = attendance.get(selectedEmployee.get(EmployeeFields.Id)).get(recordDate).get(0);
                 double timeOut = attendance.get(selectedEmployee.get(EmployeeFields.Id)).get(recordDate).get(1);
+                int currentCutoff = (day <= 15) ? 1 : 2;
 
-                if (month > initialMonth) {
-                    cutoffRecord.add(Map.of(
-                            recordDate, totalHoursWorked));
+                if (lastCutoff != -1 && (currentCutoff != lastCutoff || month != lastMonth)) {
+                    System.out.printf("""
+                            %s
+                            %s Cutoff
+                            From: %s to %s
+                            totalHoursWorked: %.2f
+                            """, monthsDisplay[lastMonth - 6], (currentCutoff != 1 ? "First" : "Second"), (currentCutoff != 1) ? "1" : "16", (currentCutoff != 1) ? "15" : "30", totalHoursWorked);
                     totalHoursWorked = 0;
-                    initialMonth = month;
-                } else {
-                    totalHoursWorked = totalHoursWorked + (timeOut - timeIn);
                 }
 
-                /*
-                 * if month > monthBefore
-                 * add new List
-                 * add to the new existing list
-                 * else
-                 * add to existing list
-                 */
-
+                totalHoursWorked += calculateTotalHoursWorked(timeIn, timeOut);
+                lastCutoff = currentCutoff;
+                lastMonth = month;
             }
 
-            System.out.println(cutoffRecord);
+            System.out.printf("""
+                            December
+                            Second Cutoff
+                            From: 16 to 30
+                            totalHoursWorked: %.2f
+                            """, totalHoursWorked);
         }
     }
 
@@ -263,6 +249,7 @@ class MOIT101Group39 {
     }
 
     public static void main(String[] args) {
+        double totalHoursWorked = calculateTotalHoursWorked(7.50, 17.3);
         try {
             Map<String, String> loggedInUser = loginUser();
             if (loggedInUser == null) {
@@ -270,7 +257,6 @@ class MOIT101Group39 {
                 return;
             }
             initializePayrollSystem(loggedInUser);
-            System.out.println(employees);
 
             if (loggedInUser.get("username").equals("employee")) {
                 processEmployee();
