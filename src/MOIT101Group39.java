@@ -67,9 +67,52 @@ class MOIT101Group39 {
         return totalHoursWorked * HourlyRate;
     }
 
-    static double calculateNetSalary(double grossSalary, double totalDeductions) {
-        double deduction = grossSalary * totalDeductions;
-        return deduction * grossSalary;
+    public static double calculateSSS(double grossSalary) {
+        double msc;
+        if (grossSalary < 5250) {
+            msc = 5000;
+        } else if (grossSalary >= 34750) {
+            msc = 35000;
+        } else {
+            msc = Math.floor((grossSalary - 250) / 500) * 500 + 500;
+        }
+        return msc * 0.05;
+    }
+
+    static double calculatePagIbig(double grossSalary) {
+        double contribution;
+        if (grossSalary <= 1500) {
+            contribution = grossSalary * 0.01;
+        } else {
+            contribution = grossSalary * 0.02;
+        }
+        return contribution;
+    }
+
+    public static double calculatePhilHealth(double grossSalary) {
+        double premium = grossSalary * 0.03;
+        if (grossSalary <= 10000) {
+            premium = 300;
+        } else if (grossSalary >= 60000) {
+            premium = 1800;
+        }
+        return premium / 2;
+    }
+
+    static double calculateWithholdingTax(double taxableIncome) {
+        if (taxableIncome <= 20833) {
+            return 0;
+        } else if (taxableIncome <= 33332) {
+            return (taxableIncome - 20833) * 0.15;
+        } else if (taxableIncome <= 66666) {
+            return (taxableIncome - 33333) * 0.20;
+        } else if (taxableIncome <= 166666) {
+            return (taxableIncome - 66667) * 0.25;
+        } else if (taxableIncome <= 666666) {
+            return (taxableIncome - 166667) * 0.30;
+        } else {
+            return (taxableIncome - 666667) * 0.35;
+        }
     }
 
     static List<List<String>> readFile(String filePath) {
@@ -120,10 +163,15 @@ class MOIT101Group39 {
     }
 
     static void processAttendanceFile(List<List<String>> attendanceTable) {
+        // loop from 0 to size ng attendanceTable e.g 1000
         for (int attendanceRow = 0; attendanceRow < attendanceTable.size(); attendanceRow++) {
+            // declare arrays of strings
             List<String> employee = attendanceTable.get(attendanceRow);
+            // get employeeId from "employee" tapos convert from "String" to "Int"
             int employeeId = Integer.parseInt(employee.getFirst());
+            // get attendance date from "employee"
             String attendanceDate = employee.get(3);
+            // replace "8:05" to "8.05" tapos convert from String to Double
             Double timeIn = Double.parseDouble(employee.get(4).replace(":", "."));
             Double timeOut = Double.parseDouble(employee.get(5).replace(":", "."));
 
@@ -206,10 +254,20 @@ class MOIT101Group39 {
                     selectedEmployee.get(EmployeeFields.Birthday));
 
             double totalHoursWorked = 0;
+            double pagibig = 0;
+            double philhealth = 0;
+            double sss = 0;
+            double totalGovDeductions = 0;
+            double taxableIncome = 0;
+            double totalDeductions = 0;
+            double witholdingTax = 0;
+            double netSalary = 0;
             String[] monthsDisplay = {"June", "July", "August", "September", "October", "November", "December"};
-
             int lastCutoff = -1;
             int lastMonth = 0;
+            double calculatedGrossSalary = 0;
+            Object employeeGrossSalary = selectedEmployee.get(EmployeeFields.GrossSemiMonthlyRate);
+            double employeeHourlyRate = Double.parseDouble(selectedEmployee.get(EmployeeFields.HourlyRate).toString());
             for (String recordDate : attendance.get(selectedEmployee.get(EmployeeFields.Id)).keySet()) {
                 int month = Integer.parseInt(recordDate.split("/")[0]);
                 int day = Integer.parseInt(recordDate.split("/")[1]);
@@ -218,12 +276,63 @@ class MOIT101Group39 {
                 int currentCutoff = (day <= 15) ? 1 : 2;
 
                 if (lastCutoff != -1 && (currentCutoff != lastCutoff || month != lastMonth)) {
-                    System.out.printf("""
-                            %s
-                            %s Cutoff
-                            From: %s to %s
-                            totalHoursWorked: %.2f
-                            """, monthsDisplay[lastMonth - 6], (currentCutoff != 1 ? "First" : "Second"), (currentCutoff != 1) ? "1" : "16", (currentCutoff != 1) ? "15" : "30", totalHoursWorked);
+                    calculatedGrossSalary = calculateGrossSalary(totalHoursWorked, employeeHourlyRate);
+                    pagibig = calculatePagIbig(calculatedGrossSalary);
+                    philhealth = calculatePhilHealth(calculatedGrossSalary);
+                    sss = calculateSSS(calculatedGrossSalary);
+                    totalGovDeductions = sss + pagibig + philhealth;
+                    taxableIncome = calculatedGrossSalary - totalGovDeductions;
+                    witholdingTax = calculateWithholdingTax(taxableIncome);
+                    totalDeductions = totalGovDeductions + witholdingTax;
+                    if(lastCutoff == 1) {
+                        netSalary = calculatedGrossSalary;
+                    } else {
+                        netSalary = calculatedGrossSalary - totalDeductions;
+                    }
+                    if (lastCutoff == 1) {
+                        System.out.printf("""
+                                        ==========================
+                                        %S
+                                        >>> %s Cutoff <<<
+                                        From: %s to %s
+                                        Total hours worked: %.2f
+                                        Gross Salary: %,.2f
+                                        Net Salary: %,.2f%n
+                                        """,
+                                monthsDisplay[lastMonth - 6],
+                                (currentCutoff != 1 ? "First" : "Second"),
+                                (currentCutoff != 1) ? "1" : "16",
+                                (currentCutoff != 1) ? "15" : "30",
+                                totalHoursWorked,
+                                calculatedGrossSalary,
+                                netSalary);
+                    } else {
+                        System.out.printf("""
+                                        %S
+                                        >>> %s Cutoff <<<
+                                        From: %s to %s
+                                        Total hours worked: %.2f
+                                        Gross Salary: %,.2f
+                                        Each Deduction:
+                                            SSS: %,.0f
+                                            Philhealth: %,.0f
+                                            Pag-Ibig: %,.0f
+                                            Tax: %,.0f
+                                        Net Salary: %,.2f
+                                        """,
+                                monthsDisplay[lastMonth - 6],
+                                (currentCutoff != 1 ? "First" : "Second"),
+                                (currentCutoff != 1) ? "1" : "16",
+                                (currentCutoff != 1) ? "15" : "30",
+                                totalHoursWorked,
+                                calculatedGrossSalary,
+                                sss,
+                                philhealth,
+                                pagibig,
+                                witholdingTax,
+                                netSalary);
+                    }
+
                     totalHoursWorked = 0;
                 }
 
@@ -233,11 +342,30 @@ class MOIT101Group39 {
             }
 
             System.out.printf("""
-                            December
-                            Second Cutoff
-                            From: 16 to 30
-                            totalHoursWorked: %.2f
-                            """, totalHoursWorked);
+                            %S
+                            >>> %s Cutoff <<<
+                            From: %s to %s
+                            Total hours worked: %.2f
+                            Gross Salary: %,.2f
+                            Each Deduction:
+                                SSS: %,.0f
+                                Philhealth: %,.0f
+                                Pag-Ibig: %,.0f
+                                Tax: %,.0f
+                            Net Salary: %,.2f
+                            ==========================
+                            """,
+                    monthsDisplay[lastMonth - 6],
+                    "Second",
+                    "16",
+                    "30",
+                    totalHoursWorked,
+                    calculatedGrossSalary,
+                    sss,
+                    philhealth,
+                    pagibig,
+                    witholdingTax,
+                    netSalary);
         }
     }
 
