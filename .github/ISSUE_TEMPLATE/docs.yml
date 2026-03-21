@@ -1,0 +1,37 @@
+name: 📝 Documentation Improvement
+description: Suggest a fix or addition to our documentation
+title: "[DOCS]: "
+labels: ["documentation"]
+body:
+  - type: input
+    id: location
+    attributes:
+      label: Documentation Link/Location
+      placeholder: URL or file path
+    validations:
+      required: true
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: 📊 Ticket Complexity
+      options:
+        - 1 Low (Quick fix/Typo)
+        - 2 Medium (Requires investigation)
+        - 3 High (Complex logic/Breaking change)
+        - 5 Sprint (Requires making breaking 1 big task to small tasks)
+    validations:
+      required: true
+  - type: checkboxes
+    id: issue_type
+    attributes:
+      label: What is the issue?
+      options:
+        - label: Missing Information
+        - label: Outdated Content
+        - label: Typo/Grammar
+        - label: Confusing Language
+  - type: textarea
+    id: proposed_change
+    attributes:
+      label: Proposed Change
+      placeholder: Describe what should be changed or added.
