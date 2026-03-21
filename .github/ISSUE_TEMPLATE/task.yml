@@ -1,0 +1,36 @@
+name: ✅ Task
+description: A specific technical task or sub-feature implementation
+title: "[TASK]: "
+labels: ["task"]
+body:
+  - type: input
+    id: summary
+    attributes:
+      label: Task Summary
+      placeholder: e.g., Implement the user logout logic
+    validations:
+      required: true
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: 📊 Ticket Complexity
+      description: Estimate the effort required for this task.
+      options:
+        - 1 Low (Quick fix/Typo)
+        - 2 Medium (Requires investigation)
+        - 3 High (Complex logic/Breaking change)
+        - 5 Sprint (Requires making breaking 1 big task to small tasks)
+    validations:
+      required: true
+  - type: textarea
+    id: todo
+    attributes:
+      label: 🛠 To-Do List
+      value: |
+        - [ ] Task 1
+        - [ ] Task 2
+  - type: input
+    id: parent_issue
+    attributes:
+      label: Related Parent Issue
+      placeholder: e.g. #123
