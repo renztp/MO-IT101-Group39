@@ -370,8 +370,8 @@ class MOIT101Group39 {
     }
 
     static void initializePayrollSystem(Map<String, String> loggedInUser) throws IOException {
-        List<List<String>> attendanceRecordTable = readFile("src/assets/MotorPH_Employee Data - Attendance Record.csv");
-        List<List<String>> employeeDetailsTable = readFile("src/assets/MotorPH_Employee Data - Employee Details.csv");
+        List<List<String>> attendanceRecordTable = readFile("src/main/resources/MotorPH_Employee Data - Attendance Record.csv");
+        List<List<String>> employeeDetailsTable = readFile("src/main/resources/MotorPH_Employee Data - Employee Details.csv");
         processAttendanceFile(attendanceRecordTable);
         processEmployeeDetailsFile(employeeDetailsTable);
     }
