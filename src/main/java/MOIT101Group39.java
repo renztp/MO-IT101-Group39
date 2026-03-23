@@ -30,6 +30,10 @@ class MOIT101Group39 {
     static HashMap<Integer, Map<EmployeeFields, Object>> employees = new HashMap<>();
     static HashMap<Integer, LinkedHashMap<String, List<Double>>> attendance = new HashMap<>();
 
+    /**
+     * Simple authentication function to check valid user credentials
+     * @return Map String String
+     */
     static Map<String, String> loginUser() {
         System.out.println("\n--- MotorPH Security ---");
         String[] validUsers = {"employee", "payroll_staff"};
@@ -53,6 +57,12 @@ class MOIT101Group39 {
                 "password", password);
     }
 
+    /**
+     * Converts a time string (HH:mm) into a decimal value
+     * Inputs: String (e.g., "08:30") | Outputs: double (8.5)
+     * @param timeStr String
+     * @return double
+     */
     static double parseTimeToDecimal(String timeStr) {
         if (timeStr == null || !timeStr.contains(":")) {
             return 0.0;
@@ -71,6 +81,12 @@ class MOIT101Group39 {
         }
     }
 
+    /**
+     * Calculates total hours worked
+     * @param timeIn double
+     * @param timeOut double
+     * @return double
+     */
     static double calculateTotalHoursWorked(double timeIn, double timeOut) {
         double adjOut = Math.min(timeOut, 17.0);
         double adjIn = timeIn;
@@ -81,22 +97,34 @@ class MOIT101Group39 {
         return (adjOut - adjIn) - 1.0;
     }
 
+    /**
+     * Calculates employee gross salary
+     * @param totalHoursWorked double
+     * @param HourlyRate double
+     * @return double
+     */
     static double calculateGrossSalary(double totalHoursWorked, double HourlyRate) {
         return totalHoursWorked * HourlyRate;
     }
 
+    /**
+     * Calculates SSS contribution based on Gross Salary
+     * @param grossSalary
+     * @return double
+     */
     public static double calculateSSS(double grossSalary) {
-        double msc;
-        if (grossSalary < 5250) {
-            msc = 5000;
-        } else if (grossSalary >= 34750) {
-            msc = 35000;
-        } else {
-            msc = Math.floor((grossSalary - 250) / 500) * 500 + 500;
-        }
-        return msc * 0.05;
+        if (grossSalary < 5250)
+            return 225.0;
+        if (grossSalary >= 24750)
+            return 1125.0;
+        return (Math.floor((grossSalary - 250) / 500) * 500 + 500) * 0.045;
     }
 
+    /**
+     * Calculates Pag-Ibig contribution (capped)
+     * @param grossSalary
+     * @return double
+     */
     static double calculatePagIbig(double grossSalary) {
         double contribution;
         if (grossSalary <= 1500) {
@@ -117,6 +145,11 @@ class MOIT101Group39 {
         return premium / 2;
     }
 
+    /**
+     * Calculates Withholding Tax based on taxable income
+     * @param taxableIncome
+     * @return
+     */
     static double calculateWithholdingTax(double taxableIncome) {
         if (taxableIncome <= 20833) {
             return 0;
@@ -133,6 +166,12 @@ class MOIT101Group39 {
         }
     }
 
+    /**
+     * Reads CSV file using relative paths for portability
+     * REGEX: Splits by comma but ignores commas inside quotes
+     * @param filePath
+     * @return List<List<String>> table
+     */
     public static List<List<String>> readFile(String filePath) {
         List<List<String>> table = new ArrayList<>();
         Path path = Paths.get(filePath);
@@ -153,6 +192,10 @@ class MOIT101Group39 {
         return table;
     }
 
+    /**
+     * Process Employee Details file using a HashMap to find the employee by Id
+     * @param employeeDetailsTable
+     */
     static void processEmployeeDetailsFile(List<List<String>> employeeDetailsTable) {
         for (List<String> strings : employeeDetailsTable) {
             int employeeId = Integer.parseInt(strings.getFirst());
@@ -181,6 +224,10 @@ class MOIT101Group39 {
         }
     }
 
+    /**
+     * Process the attendance file using linkedHashMap acccessing it by attendance date
+     * @param attendanceTable
+     */
     static void processAttendanceFile(List<List<String>> attendanceTable) {
         // loop from 0 to size ng attendanceTable e.g 1000
         for (List<String> employee : attendanceTable) {
@@ -202,32 +249,54 @@ class MOIT101Group39 {
         }
     }
 
+    /**
+     * Process employee flow and prints employee details
+     */
     static void processEmployee() {
-        System.out.println("=".repeat(40));
-        System.out.println("MOTORPH EMPLOYEE CONTROL");
-        System.out.println("=".repeat(40));
-        System.out.println("""
+        boolean active = true;
+        while(active) {
+            try {
+                System.out.println("=".repeat(40));
+                System.out.println("MOTORPH EMPLOYEE CONTROL");
+                System.out.println("=".repeat(40));
+                System.out.println("""
                 1. Enter your employee number
                 2. Exit the program
                 """);
-        int userChoice = scanner.nextInt();
-        if (userChoice == 2)
-            return;
-        if (userChoice > 2) {
-            System.out.println("Input was out of range on the available choices");
-            return;
-        }
-        System.out.println("Enter employee number:");
-        int employeeNumber = scanner.nextInt();
-        Map<EmployeeFields, Object> employee = employees.get(employeeNumber);
-        System.out.printf("""
+                int userChoice = scanner.nextInt();
+                switch(userChoice) {
+                    case 1:
+                        System.out.println("Enter employee number:");
+                        int employeeNumber = scanner.nextInt();
+                        Map<EmployeeFields, Object> employee = employees.get(employeeNumber);
+                        System.out.printf("""
                         Employee Number: %s
                         Employee Name: %s %s
                         Birthday: %s
                         """, employeeNumber, employee.get(EmployeeFields.FirstName), employee.get(EmployeeFields.LastName),
-                employee.get(EmployeeFields.Birthday));
+                                employee.get(EmployeeFields.Birthday));
+                        active = false;
+                        break;
+                    case 2:
+                        active = false;
+                        break;
+                    default:
+                        System.out.println("Invalid choice. Please try again.");
+                }
+            } catch(InputMismatchException e) {
+                System.out.println("Error: Please enter a numeric value.");
+                scanner.next(); // Clear buffer
+            }
+        }
     }
 
+    /**
+     * Prints Employee cutoff record based on current cutoff
+     * @param currentCutoff
+     * @param monthDisplay
+     * @param employeeRecordResult
+     * @param totalHoursWorked
+     */
     static void printEmployeeCutoff(int currentCutoff, String monthDisplay, Map<String, Double> employeeRecordResult, double totalHoursWorked) {
         if(currentCutoff != 1) {
             System.out.printf("""
@@ -280,6 +349,12 @@ class MOIT101Group39 {
         }
     }
 
+    /**
+     * Handles all calculations and saving the Map of the result
+     * @param employeeRecord
+     * @param totalHoursWorked
+     * @param hourlyRate
+     */
     static void calculateEmployeeRecord(Map<String, Double> employeeRecord, double totalHoursWorked, double hourlyRate) {
         employeeRecord.put("calculatedGrossSalary", calculateGrossSalary(totalHoursWorked, hourlyRate));
         employeeRecord.put("pagIbig", calculatePagIbig(employeeRecord.get("calculatedGrossSalary")));
@@ -292,6 +367,10 @@ class MOIT101Group39 {
         employeeRecord.put("totalDeductions", employeeRecord.get("totalGovDeductions") + employeeRecord.get("witholdingTax"));
     }
 
+    /**
+     * Process Employee Record based on current selectedEmployee
+     * @param selectedEmployee
+     */
     static void processEmployeeRecord(Map<EmployeeFields, Object> selectedEmployee) {
         System.out.printf("""
                             Employee #: %s
@@ -335,6 +414,9 @@ class MOIT101Group39 {
         printEmployeeCutoff(1, monthsDisplay[lastMonth - 6], employeeRecordResult, totalHoursWorked);
     }
 
+    /**
+     * Goes through all employees and calls processEmployeeRecord
+     */
     static void processAllEmployeeRecords() {
         for(int employeeId : employees.keySet()) {
             Map<EmployeeFields, Object> currentEmployee = employees.get(employeeId);
@@ -345,6 +427,9 @@ class MOIT101Group39 {
         }
     }
 
+    /**
+     * Handles Payroll staff actions
+     */
     static void processPayrollStaff() {
         boolean active = true;
         while(active) {
@@ -388,6 +473,9 @@ class MOIT101Group39 {
         }
     }
 
+    /**
+     * Handles processing Attendance File & Employee Details File
+     */
     static void initializePayrollSystem() {
         List<List<String>> attendanceRecordTable = readFile("src/main/resources/MotorPH_Employee Data - Attendance Record.csv");
         List<List<String>> employeeDetailsTable = readFile("src/main/resources/MotorPH_Employee Data - Employee Details.csv");
