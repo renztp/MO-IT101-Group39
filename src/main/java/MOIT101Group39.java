@@ -5,7 +5,7 @@ import java.util.*;
 class MOIT101Group39 {
     static Scanner scanner = new Scanner(System.in);
 
-    static enum EmployeeFields {
+    enum EmployeeFields {
         Id,
         LastName,
         FirstName,
@@ -31,6 +31,7 @@ class MOIT101Group39 {
     static HashMap<Integer, LinkedHashMap<String, List<Double>>> attendance = new HashMap<>();
 
     static Map<String, String> loginUser() {
+        System.out.println("\n--- MotorPH Security ---");
         String[] validUsers = {"employee", "payroll_staff"};
         System.out.println("Enter username:");
         String username = scanner.nextLine();
@@ -50,6 +51,24 @@ class MOIT101Group39 {
         return Map.of(
                 "username", username,
                 "password", password);
+    }
+
+    static double parseTimeToDecimal(String timeStr) {
+        if (timeStr == null || !timeStr.contains(":")) {
+            return 0.0;
+        }
+        try {
+            // Split the string into hours and minutes
+            String[] parts = timeStr.split(":");
+            double hours = Double.parseDouble(parts[0]);
+            double minutes = Double.parseDouble(parts[1]);
+
+            // ACCURACY FIX: Divide minutes by 60 to get the true decimal.
+            // Example: 8:45 becomes 8 + (45/60) = 8.75
+            return hours + (minutes / 60.0);
+        } catch (NumberFormatException e) {
+            return 0.0;
+        }
     }
 
     static double calculateTotalHoursWorked(double timeIn, double timeOut) {
@@ -135,45 +154,44 @@ class MOIT101Group39 {
     }
 
     static void processEmployeeDetailsFile(List<List<String>> employeeDetailsTable) {
-        for (int employeeDetailsRow = 0; employeeDetailsRow < employeeDetailsTable.size(); employeeDetailsRow++) {
-            int employeeId = Integer.parseInt(employeeDetailsTable.get(employeeDetailsRow).getFirst());
+        for (List<String> strings : employeeDetailsTable) {
+            int employeeId = Integer.parseInt(strings.getFirst());
             Map<EmployeeFields, Object> employeeObj = Map.ofEntries(
                     Map.entry(EmployeeFields.Id, employeeId),
-                    Map.entry(EmployeeFields.LastName, employeeDetailsTable.get(employeeDetailsRow).get(1)),
-                    Map.entry(EmployeeFields.FirstName, employeeDetailsTable.get(employeeDetailsRow).get(2)),
-                    Map.entry(EmployeeFields.Birthday, employeeDetailsTable.get(employeeDetailsRow).get(3)),
-                    Map.entry(EmployeeFields.Address, employeeDetailsTable.get(employeeDetailsRow).get(4)),
-                    Map.entry(EmployeeFields.PhoneNumber, employeeDetailsTable.get(employeeDetailsRow).get(5)),
-                    Map.entry(EmployeeFields.SSSNum, employeeDetailsTable.get(employeeDetailsRow).get(6)),
-                    Map.entry(EmployeeFields.PhilhealthNum, employeeDetailsTable.get(employeeDetailsRow).get(7)),
-                    Map.entry(EmployeeFields.TinNum, employeeDetailsTable.get(employeeDetailsRow).get(8)),
-                    Map.entry(EmployeeFields.PagIbigNum, employeeDetailsTable.get(employeeDetailsRow).get(9)),
-                    Map.entry(EmployeeFields.Status, employeeDetailsTable.get(employeeDetailsRow).get(10)),
-                    Map.entry(EmployeeFields.Position, employeeDetailsTable.get(employeeDetailsRow).get(11)),
-                    Map.entry(EmployeeFields.ImmediateSuperVisor, employeeDetailsTable.get(employeeDetailsRow).get(12)),
-                    Map.entry(EmployeeFields.BasicSalary, employeeDetailsTable.get(employeeDetailsRow).get(13)),
-                    Map.entry(EmployeeFields.RiceSubs, employeeDetailsTable.get(employeeDetailsRow).get(14)),
-                    Map.entry(EmployeeFields.PhoneAllowance, employeeDetailsTable.get(employeeDetailsRow).get(15)),
-                    Map.entry(EmployeeFields.ClothingAllowance, employeeDetailsTable.get(employeeDetailsRow).get(16)),
+                    Map.entry(EmployeeFields.LastName, strings.get(1)),
+                    Map.entry(EmployeeFields.FirstName, strings.get(2)),
+                    Map.entry(EmployeeFields.Birthday, strings.get(3)),
+                    Map.entry(EmployeeFields.Address, strings.get(4)),
+                    Map.entry(EmployeeFields.PhoneNumber, strings.get(5)),
+                    Map.entry(EmployeeFields.SSSNum, strings.get(6)),
+                    Map.entry(EmployeeFields.PhilhealthNum, strings.get(7)),
+                    Map.entry(EmployeeFields.TinNum, strings.get(8)),
+                    Map.entry(EmployeeFields.PagIbigNum, strings.get(9)),
+                    Map.entry(EmployeeFields.Status, strings.get(10)),
+                    Map.entry(EmployeeFields.Position, strings.get(11)),
+                    Map.entry(EmployeeFields.ImmediateSuperVisor, strings.get(12)),
+                    Map.entry(EmployeeFields.BasicSalary, strings.get(13)),
+                    Map.entry(EmployeeFields.RiceSubs, strings.get(14)),
+                    Map.entry(EmployeeFields.PhoneAllowance, strings.get(15)),
+                    Map.entry(EmployeeFields.ClothingAllowance, strings.get(16)),
                     Map.entry(EmployeeFields.GrossSemiMonthlyRate,
-                            employeeDetailsTable.get(employeeDetailsRow).get(17)),
-                    Map.entry(EmployeeFields.HourlyRate, employeeDetailsTable.get(employeeDetailsRow).get(18)));
+                            strings.get(17)),
+                    Map.entry(EmployeeFields.HourlyRate, strings.get(18)));
             employees.put(employeeId, employeeObj);
         }
     }
 
     static void processAttendanceFile(List<List<String>> attendanceTable) {
         // loop from 0 to size ng attendanceTable e.g 1000
-        for (int attendanceRow = 0; attendanceRow < attendanceTable.size(); attendanceRow++) {
+        for (List<String> employee : attendanceTable) {
             // declare arrays of strings
-            List<String> employee = attendanceTable.get(attendanceRow);
             // get employeeId from "employee" tapos convert from "String" to "Int"
             int employeeId = Integer.parseInt(employee.getFirst());
             // get attendance date from "employee"
             String attendanceDate = employee.get(3);
             // replace "8:05" to "8.05" tapos convert from String to Double
-            Double timeIn = Double.parseDouble(employee.get(4).replace(":", "."));
-            Double timeOut = Double.parseDouble(employee.get(5).replace(":", "."));
+            Double timeIn = parseTimeToDecimal(employee.get(4));
+            Double timeOut = parseTimeToDecimal(employee.get(5));
 
             if (attendance.containsKey(employeeId)) {
                 attendance.get(employeeId).put(attendanceDate, List.of(timeIn, timeOut));
@@ -185,6 +203,9 @@ class MOIT101Group39 {
     }
 
     static void processEmployee() {
+        System.out.println("=".repeat(40));
+        System.out.println("MOTORPH EMPLOYEE CONTROL");
+        System.out.println("=".repeat(40));
         System.out.println("""
                 1. Enter your employee number
                 2. Exit the program
@@ -207,184 +228,181 @@ class MOIT101Group39 {
                 employee.get(EmployeeFields.Birthday));
     }
 
-    static void processPayrollStaff() {
-        System.out.println("""
-                1. Process payroll
-                2. Exit the program
-                """);
-        int userChoice = scanner.nextInt();
-        if (userChoice == 2)
-            return;
-        if (userChoice > 2) {
-            System.out.println("Input was out of range on the available choices");
-            return;
-        }
-
-        System.out.println("""
-                1. One employee
-                2. All employees
-                3. Exit the program
-                """);
-
-        userChoice = scanner.nextInt();
-        if (userChoice == 3)
-            return;
-        if (userChoice > 3) {
-            System.out.println("Input was out of range based on available choices");
-            return;
-        }
-
-        if (userChoice == 1) {
-            System.out.println("Enter the employee number: ");
-            int employeeNumber = scanner.nextInt();
-            Map<EmployeeFields, Object> selectedEmployee = employees.get(employeeNumber);
-            if (selectedEmployee == null) {
-                System.out.println("Employee number does not exist.");
-                return;
-            }
-
+    static void printEmployeeCutoff(int currentCutoff, String monthDisplay, Map<String, Double> employeeRecordResult, double totalHoursWorked) {
+        if(currentCutoff != 1) {
             System.out.printf("""
-                            Employee #: %s
-                            Employee Name: %s %s
-                            Birthday: %s
-                            """,
-                    selectedEmployee.get(EmployeeFields.Id),
-                    selectedEmployee.get(EmployeeFields.FirstName),
-                    selectedEmployee.get(EmployeeFields.LastName),
-                    selectedEmployee.get(EmployeeFields.Birthday));
-
-            double totalHoursWorked = 0;
-            double pagibig = 0;
-            double philhealth = 0;
-            double sss = 0;
-            double totalGovDeductions = 0;
-            double taxableIncome = 0;
-            double totalDeductions = 0;
-            double witholdingTax = 0;
-            double netSalary = 0;
-            String[] monthsDisplay = {"June", "July", "August", "September", "October", "November", "December"};
-            int lastCutoff = -1;
-            int lastMonth = 0;
-            double calculatedGrossSalary = 0;
-            Object employeeGrossSalary = selectedEmployee.get(EmployeeFields.GrossSemiMonthlyRate);
-            double employeeHourlyRate = Double.parseDouble(selectedEmployee.get(EmployeeFields.HourlyRate).toString());
-            for (String recordDate : attendance.get(selectedEmployee.get(EmployeeFields.Id)).keySet()) {
-                int month = Integer.parseInt(recordDate.split("/")[0]);
-                int day = Integer.parseInt(recordDate.split("/")[1]);
-                double timeIn = attendance.get(selectedEmployee.get(EmployeeFields.Id)).get(recordDate).get(0);
-                double timeOut = attendance.get(selectedEmployee.get(EmployeeFields.Id)).get(recordDate).get(1);
-                int currentCutoff = (day <= 15) ? 1 : 2;
-
-                if (lastCutoff != -1 && (currentCutoff != lastCutoff || month != lastMonth)) {
-                    calculatedGrossSalary = calculateGrossSalary(totalHoursWorked, employeeHourlyRate);
-                    pagibig = calculatePagIbig(calculatedGrossSalary);
-                    philhealth = calculatePhilHealth(calculatedGrossSalary);
-                    sss = calculateSSS(calculatedGrossSalary);
-                    totalGovDeductions = sss + pagibig + philhealth;
-                    taxableIncome = calculatedGrossSalary - totalGovDeductions;
-                    witholdingTax = calculateWithholdingTax(taxableIncome);
-                    totalDeductions = totalGovDeductions + witholdingTax;
-                    if(lastCutoff == 1) {
-                        netSalary = calculatedGrossSalary;
-                    } else {
-                        netSalary = calculatedGrossSalary - totalDeductions;
-                    }
-                    if (lastCutoff == 1) {
-                        System.out.printf("""
-                                        ==========================
-                                        %S
-                                        >>> %s Cutoff <<<
-                                        From: %s to %s
-                                        Total hours worked: %.2f
-                                        Gross Salary: %,.2f
-                                        Net Salary: %,.2f%n
-                                        """,
-                                monthsDisplay[lastMonth - 6],
-                                (currentCutoff != 1 ? "First" : "Second"),
-                                (currentCutoff != 1) ? "1" : "16",
-                                (currentCutoff != 1) ? "15" : "30",
-                                totalHoursWorked,
-                                calculatedGrossSalary,
-                                netSalary);
-                    } else {
-                        System.out.printf("""
-                                        %S
-                                        >>> %s Cutoff <<<
-                                        From: %s to %s
-                                        Total hours worked: %.2f
-                                        Gross Salary: %,.2f
-                                        Each Deduction:
-                                            SSS: %,.0f
-                                            Philhealth: %,.0f
-                                            Pag-Ibig: %,.0f
-                                            Tax: %,.0f
-                                        Net Salary: %,.2f
-                                        """,
-                                monthsDisplay[lastMonth - 6],
-                                (currentCutoff != 1 ? "First" : "Second"),
-                                (currentCutoff != 1) ? "1" : "16",
-                                (currentCutoff != 1) ? "15" : "30",
-                                totalHoursWorked,
-                                calculatedGrossSalary,
-                                sss,
-                                philhealth,
-                                pagibig,
-                                witholdingTax,
-                                netSalary);
-                    }
-
-                    totalHoursWorked = 0;
-                }
-
-                totalHoursWorked += calculateTotalHoursWorked(timeIn, timeOut);
-                lastCutoff = currentCutoff;
-                lastMonth = month;
-            }
-
+                       %s
+                       %S
+                       >>> %s Cutoff <<<
+                       From: %s to %s
+                       Total hours worked: %.2f
+                       Gross Salary: ₱%,.2f
+                       Net Salary: ₱%,.2f
+                       """,
+                    "=".repeat(40),
+                    monthDisplay,
+                    "First",
+                    "1",
+                    "15",
+                    totalHoursWorked,
+                    employeeRecordResult.get("calculatedGrossSalary"),
+                    employeeRecordResult.get("netSalary")
+            );
+        } else {
             System.out.printf("""
-                            %S
-                            >>> %s Cutoff <<<
-                            From: %s to %s
-                            Total hours worked: %.2f
-                            Gross Salary: %,.2f
-                            Each Deduction:
-                                SSS: %,.0f
-                                Philhealth: %,.0f
-                                Pag-Ibig: %,.0f
-                                Tax: %,.0f
-                            Net Salary: %,.2f
-                            ==========================
-                            """,
-                    monthsDisplay[lastMonth - 6],
+                       %s
+                       >>> %s Cutoff <<<
+                       From: %s to %s
+                       Total hours worked: %.2f
+                       Gross Salary: ₱%,.2f
+                       Net Salary: ₱%,.2f
+                       """,
+                    "",
                     "Second",
                     "16",
                     "30",
                     totalHoursWorked,
-                    calculatedGrossSalary,
-                    sss,
-                    philhealth,
-                    pagibig,
-                    witholdingTax,
-                    netSalary);
+                    employeeRecordResult.get("calculatedGrossSalary"),
+                    employeeRecordResult.get("netSalary")
+            );
+
+            System.out.printf("""
+                    Each Deduction:
+                        SSS: %,.0f
+                        Philhealth: %,.0f
+                        Pag-Ibig: %,.0f
+                        Tax: %,.0f
+                    """,
+                    employeeRecordResult.get("sss"),
+                    employeeRecordResult.get("philHealth"),
+                    employeeRecordResult.get("pagIbig"),
+                    employeeRecordResult.get("witholdingTax"));
         }
     }
 
-    static void initializePayrollSystem(Map<String, String> loggedInUser) throws IOException {
+    static void calculateEmployeeRecord(Map<String, Double> employeeRecord, double totalHoursWorked, double hourlyRate) {
+        employeeRecord.put("calculatedGrossSalary", calculateGrossSalary(totalHoursWorked, hourlyRate));
+        employeeRecord.put("pagIbig", calculatePagIbig(employeeRecord.get("calculatedGrossSalary")));
+        employeeRecord.put("philHealth", calculatePhilHealth(employeeRecord.get("calculatedGrossSalary")));
+        employeeRecord.put("sss", calculateSSS(employeeRecord.get("calculatedGrossSalary")));
+        employeeRecord.put("totalGovDeductions", employeeRecord.get("sss") + employeeRecord.get("pagIbig") + employeeRecord.get("philHealth"));
+        employeeRecord.put("taxableIncome", employeeRecord.get("calculatedGrossSalary") - employeeRecord.get("totalGovDeductions"));
+        employeeRecord.put("total", employeeRecord.get("calculatedGrossSalary") - employeeRecord.get("totalGovDeductions"));
+        employeeRecord.put("witholdingTax", calculateWithholdingTax(employeeRecord.get("taxableIncome")));
+        employeeRecord.put("totalDeductions", employeeRecord.get("totalGovDeductions") + employeeRecord.get("witholdingTax"));
+    }
+
+    static void processEmployeeRecord(Map<EmployeeFields, Object> selectedEmployee) {
+        System.out.printf("""
+                            Employee #: %s
+                            Employee Name: %s %s
+                            Birthday: %s
+                            """,
+                selectedEmployee.get(EmployeeFields.Id),
+                selectedEmployee.get(EmployeeFields.FirstName),
+                selectedEmployee.get(EmployeeFields.LastName),
+                selectedEmployee.get(EmployeeFields.Birthday));
+
+        Map<String, Double> employeeRecordResult = new HashMap<>();
+        double totalHoursWorked = 0;
+        String[] monthsDisplay = {"June", "July", "August", "September", "October", "November", "December"};
+        int lastCutoff = -1;
+        int lastMonth = 0;
+        double employeeHourlyRate = Double.parseDouble(selectedEmployee.get(EmployeeFields.HourlyRate).toString());
+        for (String recordDate : attendance.get(selectedEmployee.get(EmployeeFields.Id)).keySet()) {
+            int month = Integer.parseInt(recordDate.split("/")[0]);
+            int day = Integer.parseInt(recordDate.split("/")[1]);
+            double timeIn = attendance.get(selectedEmployee.get(EmployeeFields.Id)).get(recordDate).get(0);
+            double timeOut = attendance.get(selectedEmployee.get(EmployeeFields.Id)).get(recordDate).get(1);
+            int currentCutoff = (day <= 15) ? 1 : 2;
+
+            if (lastCutoff != -1 && (currentCutoff != lastCutoff || month != lastMonth)) {
+                calculateEmployeeRecord(employeeRecordResult, totalHoursWorked, employeeHourlyRate);
+                if (lastCutoff == 1) {
+                    employeeRecordResult.put("netSalary", employeeRecordResult.get("calculatedGrossSalary"));
+                } else {
+                    employeeRecordResult.put("netSalary", employeeRecordResult.get("calculatedGrossSalary") - employeeRecordResult.get("totalDeductions"));
+                }
+                printEmployeeCutoff(currentCutoff, monthsDisplay[lastMonth - 6], employeeRecordResult, totalHoursWorked);
+
+                totalHoursWorked = 0;
+            }
+
+            totalHoursWorked += calculateTotalHoursWorked(timeIn, timeOut);
+            lastCutoff = currentCutoff;
+            lastMonth = month;
+        }
+        printEmployeeCutoff(1, monthsDisplay[lastMonth - 6], employeeRecordResult, totalHoursWorked);
+    }
+
+    static void processAllEmployeeRecords() {
+        for(int employeeId : employees.keySet()) {
+            Map<EmployeeFields, Object> currentEmployee = employees.get(employeeId);
+            System.out.println("/".repeat(40));
+            processEmployeeRecord(currentEmployee);
+            System.out.println("\\".repeat(40));
+            System.out.println("\n");
+        }
+    }
+
+    static void processPayrollStaff() {
+        boolean active = true;
+        while(active) {
+            System.out.println("\n" + "=".repeat(40));
+            System.out.println("MOTORPH PAYROLL STAFF CONTROL");
+            System.out.println("=".repeat(40));
+            System.out.println("1. Process Single Employee Payslip");
+            System.out.println("2. Generate All-Employee Summary");
+            System.out.println("3. Logout & Return to Main");
+            System.out.print("Select Option: ");
+
+            try {
+                int choice = scanner.nextInt();
+                switch(choice) {
+                    case 1:
+                        System.out.println("Enter the employee number: ");
+                        int employeeNumber = scanner.nextInt();
+                        Map<EmployeeFields, Object> selectedEmployee = employees.get(employeeNumber);
+                        if (selectedEmployee == null) {
+                            System.out.println("Employee number does not exist.");
+                            return;
+                        }
+
+                        processEmployeeRecord(selectedEmployee);
+                        active = false;
+                        break;
+                    case 2:
+                        processAllEmployeeRecords();
+                        active = false;
+                        break;
+                    case 3:
+                        active = false;
+                        break;
+                    default:
+                        System.out.println("Invalid choice. Please try again.");
+                }
+            } catch(InputMismatchException e) {
+                System.out.println("Error: Please enter a numeric value.");
+                scanner.next(); // Clear buffer
+            }
+        }
+    }
+
+    static void initializePayrollSystem() {
         List<List<String>> attendanceRecordTable = readFile("src/main/resources/MotorPH_Employee Data - Attendance Record.csv");
         List<List<String>> employeeDetailsTable = readFile("src/main/resources/MotorPH_Employee Data - Employee Details.csv");
         processAttendanceFile(attendanceRecordTable);
         processEmployeeDetailsFile(employeeDetailsTable);
     }
 
-    public static void main(String[] args) {
-        double totalHoursWorked = calculateTotalHoursWorked(7.50, 17.3);
+    static void main(String[] args) {
         try {
             Map<String, String> loggedInUser = loginUser();
             if (loggedInUser == null) {
                 System.out.println("Exiting program...");
                 return;
             }
-            initializePayrollSystem(loggedInUser);
+            initializePayrollSystem();
 
             if (loggedInUser.get("username").equals("employee")) {
                 processEmployee();
@@ -397,7 +415,6 @@ class MOIT101Group39 {
         } catch (Exception e) {
             System.out.println(e.getMessage() + "\nTerminating the program...");
             scanner.close();
-            return;
         }
     }
 }
