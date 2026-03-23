@@ -1,0 +1,32 @@
+name: 🐛 Bug Report
+description: File a report to help us improve
+title: "[BUG]: "
+labels: ["bug", "triage"]
+body:
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: 📊 Ticket Complexity
+      description: How difficult or time-consuming do you estimate this fix to be?
+      options:
+        - 1 Low (Quick fix/Typo)
+        - 2 Medium (Requires investigation)
+        - 3 High (Complex logic/Breaking change)
+        - 5 Sprint (Requires making breaking 1 big task to small tasks)
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the Bug
+      placeholder: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      placeholder: |
+        1. Go to '...'
+        2. Click on '....'
+        3. See error
