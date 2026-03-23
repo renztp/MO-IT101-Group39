@@ -1,6 +1,5 @@
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.*;
 import java.util.*;
 
 class MOIT101Group39 {
@@ -115,9 +114,10 @@ class MOIT101Group39 {
         }
     }
 
-    static List<List<String>> readFile(String filePath) {
+    public static List<List<String>> readFile(String filePath) {
         List<List<String>> table = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+        Path path = Paths.get(filePath);
+        try (BufferedReader br = new BufferedReader(Files.newBufferedReader(path))) {
             String line;
             int x = 0;
             while ((line = br.readLine()) != null) {
