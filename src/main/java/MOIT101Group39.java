@@ -88,13 +88,13 @@ class MOIT101Group39 {
      * @return double
      */
     static double calculateTotalHoursWorked(double timeIn, double timeOut) {
-        double adjOut = Math.min(timeOut, 17.0);
-        double adjIn = timeIn;
-        if (timeIn <= 8.0833) {
-            adjIn = 8.0;
+        double adjustedOut = Math.min(timeOut, 17.0);
+        double adjustedIn = timeIn;
+        if (timeIn <= 8.16666) {
+            adjustedIn = 8.0;
         }
-        adjIn = Math.max(adjIn, 8.0);
-        return (adjOut - adjIn) - 1.0;
+        adjustedIn = Math.max(adjustedIn, 8.0);
+        return (adjustedOut - adjustedIn) - 1.0;
     }
 
     /**
@@ -229,14 +229,14 @@ class MOIT101Group39 {
      * @param attendanceTable
      */
     static void processAttendanceFile(List<List<String>> attendanceTable) {
-        // loop from 0 to size ng attendanceTable e.g 1000
+        // loop from 0 to size of the attendanceTable e.g 1000
         for (List<String> employee : attendanceTable) {
             // declare arrays of strings
-            // get employeeId from "employee" tapos convert from "String" to "Int"
+            // get employeeId from "employee" then converts from "String" to "Int"
             int employeeId = Integer.parseInt(employee.getFirst());
             // get attendance date from "employee"
             String attendanceDate = employee.get(3);
-            // replace "8:05" to "8.05" tapos convert from String to Double
+            // replace "8:05" to "8.05" then converts from String to Double
             Double timeIn = parseTimeToDecimal(employee.get(4));
             Double timeOut = parseTimeToDecimal(employee.get(5));
 
