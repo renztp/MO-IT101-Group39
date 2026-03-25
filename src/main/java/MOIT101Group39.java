@@ -94,7 +94,7 @@ class MOIT101Group39 {
             adjustedIn = 8.0;
         }
         adjustedIn = Math.max(adjustedIn, 8.0);
-        return (adjustedOut - adjustedIn) - 1.0;
+        return Math.max(0, (adjustedOut - adjustedIn) - 1.0);
     }
 
     /**
@@ -483,7 +483,7 @@ class MOIT101Group39 {
         processEmployeeDetailsFile(employeeDetailsTable);
     }
 
-    static void main(String[] args) {
+    public static void main(String[] args) {
         try {
             Map<String, String> loggedInUser = loginUser();
             if (loggedInUser == null) {

@@ -8,21 +8,15 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class MOIT101Group39Test {
 
-    @Test
-    @DisplayName("Should calculate hours correctly based on timeIn and timeOut")
-    void calculateTotalHoursWorked() {
-        assertEquals(8.0, MOIT101Group39.calculateTotalHoursWorked(8.0, 17.0));
-    }
-
-    @Test
-    @DisplayName("Should parse string to correct decimal")
-    void shouldParseStringTimeToDecimal() {
-        assertEquals(8.0, MOIT101Group39.parseTimeToDecimal("8:0"));
-    }
-
     @Nested
     @DisplayName("Time Conversion & Work Hours")
     class AttendanceTests {
+
+        @Test
+        @DisplayName("Should calculate hours correctly based on timeIn and timeOut")
+        void calculateTotalHoursWorked() {
+            assertEquals(8.0, MOIT101Group39.calculateTotalHoursWorked(8.0, 17.0));
+        }
 
         @ParameterizedTest
         @CsvSource({
@@ -49,8 +43,22 @@ class MOIT101Group39Test {
         @DisplayName("calculateTotalHoursWorked: Should respect the 8:05 AM grace period")
         void testGracePeriod() {
             // 8.0833 is roughly 8:05 AM. Anything <= this should be treated as 8.0.
-            double result = MOIT101Group39.calculateTotalHoursWorked(8.05, 17.0);
-            assertEquals(8.0, result, "8:05 AM should still be counted as an 8:00 AM start.");
+            double result = MOIT101Group39.calculateTotalHoursWorked(8.10, 17.0);
+            assertEquals(8.0, result, "8:10 AM should still be counted as an 8:00 AM start.");
+        }
+
+        @Test
+        @DisplayName("calculateTotalHoursWorked: Should count total hours worked correctly if undertime")
+        void testUnderTime() {
+            double result = MOIT101Group39.calculateTotalHoursWorked(8.5, 16.0);
+            assertEquals(6.5, result, "8:10AM to 4:00PM should count correctly as undertime");
+        }
+
+        @Test
+        @DisplayName("calculateTotalHoursWorked: should not return negative hours for very short shifts because of lunch break")
+        void testNegativeHours() {
+            double result = MOIT101Group39.calculateTotalHoursWorked(8.0, 8.25);
+            assertEquals(0.0, result, "Hours worked should never be negative. Found: " + result);
         }
     }
 
@@ -62,6 +70,7 @@ class MOIT101Group39Test {
         @DisplayName("calculateGrossSalary: Simple multiplication of hours and rate")
         void testGrossCalculation() {
             assertEquals(500.0, MOIT101Group39.calculateGrossSalary(10.0, 50.0));
+            assertEquals(0.0, MOIT101Group39.calculateGrossSalary(0.0, 0.0));
         }
     }
 
